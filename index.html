@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>循環器｜Micro Learning</title>
+<!-- ホーム画面に追加したときの名前とアイコン -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="循環器｜Micro Learning">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F4F8FD">
+<meta name="robots" content="noindex, nofollow">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  html, body { margin: 0; height: 100%; background: #F4F8FD; }
+  #app { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+</style>
+</head>
+<body>
+<!-- 循環器｜Micro Learning の入口ページ（記憶係）
+     アプリ本体（Google Apps Script）をこのページの中に表示する。
+     iPhone はアプリ本体の中の保存を閉じるたびに消すため、ログインやデザイン設定をこのページで預かって、開くたびに返す。
+     ふだん触るのは APP_URL だけ（アプリのURLが変わったときに書き換える）。 -->
+<iframe id="app" title="循環器｜Micro Learning" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+<script>
+  const APP_URL = 'https://script.google.com/macros/s/AKfycbypMs6Axo1ylv_kDeuPIrHPT3TchtlZtF0Sxt3bQ5rTS_A953JTkaWe_vo4yQ9Y1YPcpw/exec';
+  // 値を預けてよい相手：アプリ本体が動いている Google の枠だけ
+  const APP_ORIGIN = /^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/;
+  const KEY = /^jk_/; // アプリが覚える値（jk_token・jk_theme・jk_fav・jk_size）
+
+  function stored() {
+    const out = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (KEY.test(k)) out[k] = localStorage.getItem(k);
+      }
+    } catch (e) {}
+    return out;
+  }
+
+  window.addEventListener('message', (e) => {
+    if (!APP_ORIGIN.test(e.origin) || !e.data) return;
+    const d = e.data;
+    if (d.ml === 'hello' && e.source) {
+      e.source.postMessage({ ml: 'store', data: stored() }, e.origin);
+    } else if (d.ml === 'set' && typeof d.k === 'string' && KEY.test(d.k) && typeof d.v === 'string') {
+      try { localStorage.setItem(d.k, d.v); } catch (x) {}
+    }
+  });
+
+  document.getElementById('app').src = APP_URL;
+</script>
+</body>
+</html>
